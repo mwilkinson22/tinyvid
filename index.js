@@ -2,29 +2,17 @@
 const fs = require('fs');
 const path = require('path');
 const deleteEmpty = require('delete-empty');
+const handbrake = require('handbrake-js');
 
 //File system info
-const rootDir = require('./root-dir');
-const downloadDir = rootDir + "test_fs/";
-const processDir = rootDir + "test_fs2/";
+const { downloadDir, processDir, destDir } = require('./directories');
 const videoFileTypes = ['.mkv', '.avi', '.mp4', '.bat', '.ico'];
 const files_to_process = {};
 
-function recursiveFiles(dir){
-	const results = [];
-	fs.readdirSync(dir).forEach(function(file){
-		file = path.resolve(dir, file);
-		
-		if(fs.statSync(file).isDirectory()){
-			//Directory
-			results = results.concat(recursiveCheck(file, getFolders));
-		} else {
-			//File
-			results.push(file);
-		}
-	})
-	return results;
-}
+//Handbrake info
+
+//Function
+const recusriveFiles = require('./recursive-files');
 
 //Move files to processing folder
 fs.readdirSync(downloadDir).forEach(function(showFolder){
@@ -41,7 +29,7 @@ fs.readdirSync(downloadDir).forEach(function(showFolder){
 	//Recursively run through all files
 	recursiveFiles(downloadDir).forEach(function(file){
 		if(videoFileTypes.indexOf(path.extname(file).toLowerCase()) > -1){
-			console.log(file);
+
 			//Set key variables
 			const showProcessFolder = processDir + showName;
 			const fileName = path.basename(file);
@@ -69,4 +57,29 @@ fs.readdirSync(downloadDir).forEach(function(showFolder){
 
 
 //Process files
-//tbd
+if(Object.keys(files_to_process).length){	
+	for(show in files_to_process){
+		const showDestFolder = destFolder + '/' + show;
+		
+		//Ensure target directory exists
+		if(!fs.existsSync(showDestFolder))
+			fs.mkdirSync(showDestFolder);
+		
+		files_to_process[show].forEach(function(fileName){
+			const options = {
+				"input": processDir + '/' show + '/' + fileName,
+				"output": showDestFolder + '/' + fileName,
+				"preset-import-file": '\handbrake-preset.json'
+			}
+			handbrake.exec(options, function(err, stdout, stderr){
+			  if (err)
+				  throw err
+			  
+			  console.log(stdout)
+			})
+		})
+		
+		//Call TV-Rename
+		//Update Plex
+	}
+}
