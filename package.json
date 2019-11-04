@@ -1,17 +1,17 @@
 {
-  "name": "tinyvid",
-  "version": "1.0.0",
-  "description": "Sorts video files and runs them through handbrake",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Mark Wilkinson",
-  "license": "ISC",
-  "dependencies": {
-    "delete-empty": "^2.0.0",
-    "fs": "0.0.1-security",
-    "handbrake-js": "^3.0.6",
-    "path": "^0.12.7"
-  }
+	"name": "tinyvid",
+	"version": "1.0.0",
+	"description": "Sorts video files and runs them through handbrake",
+	"main": "index.js",
+	"scripts": {
+		"start": "node index.js"
+	},
+	"author": "Mark Wilkinson",
+	"license": "ISC",
+	"dependencies": {
+		"delete-empty": "^2.0.0",
+		"fs": "0.0.1-security",
+		"handbrake-js": "^4.0.3",
+		"path": "^0.12.7"
+	}
 }
