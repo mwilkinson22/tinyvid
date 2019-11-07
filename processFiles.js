@@ -33,8 +33,8 @@ module.exports = async filesToProcess => {
 			};
 
 			//Convert file
-			//Will upgrade to handbrake.spawn when handbrake-js #37 is resolved
 			await writeLog(`Converting ${showName} episode '${filename}'`, true);
+			await writeLog(`Writing to ${options.output}`);
 			await new Promise((resolve, reject) => {
 				handbrake
 					.spawn(options)

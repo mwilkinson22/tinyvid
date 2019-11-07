@@ -20,6 +20,7 @@ module.exports = async () => {
 	for (const showName of tvShows) {
 		//Get full directory for downloaded show
 		showFolder = path.resolve(downloadDir, showName);
+		console.log(showFolder);
 
 		//Ensure we're looking at a folder, not a file;
 		const stat = await fs.stat(showFolder);
@@ -28,7 +29,7 @@ module.exports = async () => {
 		}
 
 		//Get all files recursively within showFolder
-		const files = await getAllFilesRecursively(downloadDir);
+		const files = await getAllFilesRecursively(showFolder);
 		for (const file of files) {
 			const isVideo = videoFileTypes.find(f => f == path.extname(file).toLowerCase());
 			if (isVideo) {
