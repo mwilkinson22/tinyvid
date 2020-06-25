@@ -5,9 +5,9 @@ const deleteEmpty = require("delete-empty");
 
 //File system info
 const { downloadDir, processDir } = require("./constants/directories");
-const videoFileTypes = require("./constants/videoFileTypes");
 
 //Helpers
+const { fileIsVideo } = require("./helpers/fileHelper");
 const writeLog = require("./helpers/writeLog");
 const getAllFilesRecursively = require("./getAllFilesRecursively");
 
@@ -38,8 +38,7 @@ module.exports = async () => {
 		}
 
 		for (const file of files) {
-			const isVideo = videoFileTypes.find(f => f == path.extname(file).toLowerCase());
-			if (isVideo) {
+			if (fileIsVideo(file)) {
 				//Set folder in conversion queue
 				const queueFolder = processDir + "/" + showName;
 				try {
