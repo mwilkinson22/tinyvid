@@ -8,6 +8,7 @@ const { downloadDir, processDir } = require("./constants/directories");
 const videoFileTypes = require("./constants/videoFileTypes");
 
 //Helpers
+const writeLog = require("./helpers/writeLog");
 const getAllFilesRecursively = require("./getAllFilesRecursively");
 
 module.exports = async () => {
@@ -20,16 +21,22 @@ module.exports = async () => {
 	for (const showName of tvShows) {
 		//Get full directory for downloaded show
 		showFolder = path.resolve(downloadDir, showName);
-		console.log(showFolder);
 
 		//Ensure we're looking at a folder, not a file;
 		const stat = await fs.stat(showFolder);
 		if (!stat || !stat.isDirectory()) {
-			return true;
+			continue;
 		}
 
 		//Get all files recursively within showFolder
 		const files = await getAllFilesRecursively(showFolder);
+
+		//Ensure there are no incomplete files
+		const incompleteFiles = files.filter(f => f.split(".").pop() === "!ut");
+		if (incompleteFiles.length) {
+			continue;
+		}
+
 		for (const file of files) {
 			const isVideo = videoFileTypes.find(f => f == path.extname(file).toLowerCase());
 			if (isVideo) {
@@ -47,17 +54,26 @@ module.exports = async () => {
 				const fileName = path.basename(file);
 
 				//Move file
-				await fs.rename(file, `${queueFolder}/${fileName}`);
-
-				//Ensure filesToProcess has a value set up for this show
-				if (!filesToProcess[showName]) {
-					filesToProcess[showName] = [];
+				let error;
+				try {
+					await fs.rename(file, `${queueFolder}/${fileName}`);
+				} catch (e) {
+					error = e;
 				}
 
-				//Add this file to the process queue
-				filesToProcess[showName].push(fileName);
-			} else if (path.extname(file) !== ".!ut") {
-				//Delete non-video, non-ut files
+				if (error) {
+					writeLog(`Error moving ${fileName}`, true);
+					writeLog(e);
+				} else {
+					//Ensure filesToProcess has a value set up for this show
+					if (!filesToProcess[showName]) {
+						filesToProcess[showName] = [];
+					}
+
+					//Add this file to the process queue
+					filesToProcess[showName].push(fileName);
+				}
+			} else {
 				await fs.unlink(file);
 			}
 		}
