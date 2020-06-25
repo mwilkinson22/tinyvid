@@ -1,6 +1,6 @@
 //Functions
 const moveFiles = require("./moveFiles.js");
-const processFiles = require("./processFiles.js");
+const convert = require("./convert.js");
 
 //Helpers
 const writeLog = require("./helpers/writeLog");
@@ -12,9 +12,9 @@ async function main() {
 
 	//Process files
 	if (Object.keys(filesToProcess).length) {
-		await processFiles(filesToProcess);
+		await convert(filesToProcess);
 
-		//Update files
+		//Update video names
 		const tvRenameResult = await executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", [
 			"/hide",
 			"/scan",
