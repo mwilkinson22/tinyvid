@@ -1,4 +1,5 @@
 //Functions
+const checkForFiles = require("./checkForFiles.js");
 const moveFiles = require("./moveFiles.js");
 const convert = require("./convert.js");
 
@@ -8,11 +9,15 @@ const executeExe = require("./helpers/executeExe");
 
 //Move files to processing folder
 async function main() {
-	const filesToProcess = await moveFiles();
+	//Check to see if any files require converting
+	const fileCount = await checkForFiles();
 
-	//Process files
-	if (Object.keys(filesToProcess).length) {
-		await convert(filesToProcess);
+	if (fileCount) {
+		//Move files and create convert list
+		const movedFiles = await moveFiles();
+
+		//Process files
+		await convert(movedFiles);
 
 		//Update video names
 		const tvRenameResult = await executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", [
