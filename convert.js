@@ -61,6 +61,7 @@ module.exports = async filesToProcess => {
 				const newSize = (outputStat.size / 1048576).toFixed(2);
 				const pcOfOriginal = ((outputStat.size / inputStat.size) * 100).toFixed(2);
 				await writeLog(`${oldSize}mb -> ${newSize}mb (${pcOfOriginal}% of original)`);
+				console.log("\n");
 
 				// If the output file exists, we can delete the original
 				await fs.unlink(options.input);
