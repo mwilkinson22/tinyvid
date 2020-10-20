@@ -20,7 +20,7 @@ module.exports = async () => {
 	const tvShows = await fs.readdir(downloadDir);
 	for (const showName of tvShows) {
 		//Get full directory for downloaded show
-		showFolder = path.resolve(downloadDir, showName);
+		const showFolder = path.resolve(downloadDir, showName);
 
 		//Ensure we're looking at a folder, not a file;
 		const stat = await fs.stat(showFolder);
@@ -47,7 +47,6 @@ module.exports = async () => {
 					//If the folder doesn't exist, create it
 					await fs.mkdir(queueFolder);
 				}
-				const newStat = await fs.stat(queueFolder);
 
 				//file is the full path. path.basename gives us just the file name
 				const fileName = path.basename(file);
@@ -61,8 +60,8 @@ module.exports = async () => {
 				}
 
 				if (error) {
-					writeLog(`Error moving ${fileName}`, true);
-					writeLog(e);
+					await writeLog(`Error moving ${fileName}`, true);
+					await writeLog(e);
 				} else {
 					//Ensure filesToProcess has a value set up for this show
 					if (!filesToProcess[showName]) {

@@ -6,6 +6,9 @@ const { fileIsVideo } = require("./helpers/fileHelper");
 const getAllFilesRecursively = require("./getAllFilesRecursively");
 
 function printCountdown(time) {
+	if (time === 0) {
+		process.stdout.write("Beginning Conversion");
+	}
 	process.stdout.write(
 		`Beginning conversion in ${time} ${
 			time === 1 ? "second" : "seconds"

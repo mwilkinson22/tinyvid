@@ -28,7 +28,7 @@ async function main() {
 			"/quit"
 		]);
 		console.log(tvRenameResult);
-		writeLog("TV Rename Updated", true);
+		await writeLog("TV Rename Updated", true);
 
 		//Update plex
 		const plexResult = await executeExe(
@@ -36,7 +36,7 @@ async function main() {
 			["--scan", "--refresh", "--section", "2"]
 		);
 		console.log(plexResult);
-		writeLog("Plex Updated", true);
+		await writeLog("Plex Updated", true);
 	}
 }
 
