@@ -1,11 +1,11 @@
 //Functions
-const checkForFiles = require("./checkForFiles.js");
-const moveFiles = require("./moveFiles.js");
-const convert = require("./convert.js");
+import { checkForFiles } from "./main/checkForFiles.js";
+import { moveFiles } from "./main/moveFiles.js";
+import { convert } from "./main/convert.js";
 
 //Helpers
-const writeLog = require("./helpers/writeLog");
-const executeExe = require("./helpers/executeExe");
+import { writeLog } from "./helpers/writeLog";
+import { executeExe } from "./helpers/executeExe";
 
 //Move files to processing folder
 async function main() {
@@ -41,4 +41,4 @@ async function main() {
 }
 
 //Run scripts
-main();
+main().then(() => console.log("Done"));

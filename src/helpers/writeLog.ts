@@ -1,9 +1,9 @@
-const fs = require("fs").promises;
+import { promises as fs } from "fs";
 const path = require("path");
-const { rootDir } = require("../constants/directories");
+import { directories } from "../constants/directories";
 
-module.exports = async (msg, withDivider = false) => {
-	const log = path.resolve(rootDir, "log.txt");
+export async function writeLog(msg: string, withDivider: boolean = false): Promise<void> {
+	const log = path.resolve(directories.rootDir, "log.txt");
 
 	//Ensure log exists
 	try {
@@ -22,4 +22,4 @@ module.exports = async (msg, withDivider = false) => {
 
 	console.log(msg);
 	await fs.appendFile(log, `${new Date().toLocaleString()} ${msg}\n`);
-};
+}

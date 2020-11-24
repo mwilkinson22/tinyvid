@@ -1,16 +1,21 @@
 //Modules
-const fs = require("fs").promises;
+import { promises as fs } from "fs";
 const path = require("path");
 const handbrake = require("handbrake-js");
 const deleteEmpty = require("delete-empty");
 
 //Constants
-const { processDir, convertedDir, destinationDir } = require("./constants/directories");
+import { directories } from "../constants/directories";
+const { processDir, convertedDir, destinationDir } = directories;
 
 //Helpers
-const writeLog = require("./helpers/writeLog");
+import { writeLog } from "../helpers/writeLog";
 
-module.exports = async filesToProcess => {
+//Interfaces
+import { IFilesToProcess } from "../interfaces/IFilesToProcess";
+import { HandbrakeProgress } from "handbrake-js";
+
+export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 	for (const showName in filesToProcess) {
 		const episodes = filesToProcess[showName];
 
@@ -38,17 +43,22 @@ module.exports = async filesToProcess => {
 			const options = {
 				input: path.resolve(processDir, showName, filename),
 				output: path.resolve(outputFolder, filename),
-				"preset-import-file": path.resolve(__dirname, "handbrake-preset.json")
+				"preset-import-file": path.resolve(
+					__dirname,
+					"src",
+					"assets",
+					"handbrake-preset.json"
+				)
 			};
 
 			//Convert file
 			await writeLog(`Converting ${showName} episode '${filename}'`, true);
 			await writeLog(`Writing to ${options.output}`);
-			await new Promise((resolve, reject) => {
+			await new Promise<void>((resolve, reject) => {
 				handbrake
 					.spawn(options)
-					.on("progress", ({ percentComplete }) => {
-						process.stdout.clearLine();
+					.on("progress", ({ percentComplete }: HandbrakeProgress) => {
+						process.stdout.clearLine(0);
 						process.stdout.cursorTo(0);
 						process.stdout.write(`${percentComplete}% Complete`);
 						if (percentComplete == 100) {
@@ -56,7 +66,7 @@ module.exports = async filesToProcess => {
 						}
 					})
 					.on("error", reject)
-					.on("end", resolve);
+					.on("end", () => resolve());
 			}).catch(async e => {
 				await writeLog(`Error converting ${showName} episode '${filename}'`);
 				await writeLog(e, false);
@@ -100,4 +110,4 @@ module.exports = async filesToProcess => {
 		await deleteEmpty(path.resolve(processDir, showName));
 		await deleteEmpty(path.resolve(convertedDir, showName));
 	}
-};
+}

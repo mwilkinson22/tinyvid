@@ -1,14 +1,14 @@
-const fs = require("fs").promises;
+import { promises as fs } from "fs";
 const path = require("path");
 
-async function getAllFilesRecursively(rootDir) {
+export async function getAllFilesRecursively(rootDir: string): Promise<string[]> {
 	const results = [];
 
 	//Loop all files/folders within rootDir
-	const files = await fs.readdir(rootDir);
+	const files: string[] = await fs.readdir(rootDir);
 	for (const fileName of files) {
 		//Get the current file
-		file = path.resolve(rootDir, fileName);
+		const file = path.resolve(rootDir, fileName);
 
 		const stat = await fs.stat(file);
 		if (stat.isDirectory()) {
@@ -23,5 +23,3 @@ async function getAllFilesRecursively(rootDir) {
 
 	return results;
 }
-
-module.exports = getAllFilesRecursively;

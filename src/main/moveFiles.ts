@@ -1,20 +1,24 @@
-//Dependencies
-const fs = require("fs").promises;
+//Modules
+import { promises as fs } from "fs";
 const path = require("path");
 const deleteEmpty = require("delete-empty");
 
 //File system info
-const { downloadDir, processDir } = require("./constants/directories");
+import { directories } from "../constants/directories";
+const { downloadDir, processDir } = directories;
+
+//Interface
+import { IFilesToProcess } from "../interfaces/IFilesToProcess";
 
 //Helpers
-const { fileIsVideo } = require("./helpers/fileHelper");
-const writeLog = require("./helpers/writeLog");
-const getAllFilesRecursively = require("./getAllFilesRecursively");
+import { fileIsVideo } from "../helpers/fileHelper";
+import { writeLog } from "../helpers/writeLog";
+import { getAllFilesRecursively } from "../helpers/getAllFilesRecursively";
 
-module.exports = async () => {
+export async function moveFiles(): Promise<IFilesToProcess> {
 	//Key: Show Name
 	//Value: Array of file names
-	const filesToProcess = {};
+	const filesToProcess: IFilesToProcess = {};
 
 	//Loop through each folder in the download directory
 	const tvShows = await fs.readdir(downloadDir);
@@ -52,17 +56,16 @@ module.exports = async () => {
 				const fileName = path.basename(file);
 
 				//Move file
-				let error;
+				let error = false;
 				try {
 					await fs.rename(file, `${queueFolder}/${fileName}`);
 				} catch (e) {
-					error = e;
-				}
-
-				if (error) {
+					error = true;
 					await writeLog(`Error moving ${fileName}`, true);
 					await writeLog(e);
-				} else {
+				}
+
+				if (!error) {
 					//Ensure filesToProcess has a value set up for this show
 					if (!filesToProcess[showName]) {
 						filesToProcess[showName] = [];
@@ -81,4 +84,4 @@ module.exports = async () => {
 	}
 
 	return filesToProcess;
-};
+}

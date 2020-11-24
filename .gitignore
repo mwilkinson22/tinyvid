@@ -1,5 +1,6 @@
-node_modules
-directories.js
 .prettierrc
 .idea
-run.exe
+dist
+node_modules
+src/assets/run.exe
+src/constants/directories.ts

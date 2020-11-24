@@ -1,24 +1,25 @@
 //File system info
-const { downloadDir } = require("./constants/directories");
+import { directories } from "../constants/directories";
+const { downloadDir } = directories;
 
 //Helpers
-const { fileIsVideo } = require("./helpers/fileHelper");
-const getAllFilesRecursively = require("./getAllFilesRecursively");
+import { fileIsVideo } from "../helpers/fileHelper";
+import { getAllFilesRecursively } from "../helpers/getAllFilesRecursively";
 
-function printCountdown(time) {
-	if (time === 0) {
+function printCountdown(seconds: number) {
+	if (seconds === 0) {
 		process.stdout.write("Beginning Conversion");
 	}
 	process.stdout.write(
-		`Beginning conversion in ${time} ${
-			time === 1 ? "second" : "seconds"
+		`Beginning conversion in ${seconds} ${
+			seconds === 1 ? "second" : "seconds"
 		}, close window to cancel`
 	);
 }
 
-module.exports = async () => {
+export async function checkForFiles(): Promise<number> {
 	//Get all files within download directory
-	const allFiles = await getAllFilesRecursively(downloadDir);
+	const allFiles: string[] = await getAllFilesRecursively(downloadDir);
 
 	//Create a regex to filter download directory
 	//This must match forward and backward slashes, so first we create a
@@ -32,7 +33,7 @@ module.exports = async () => {
 	//Filter files and format strings
 	const filesToConvert = allFiles
 		//Only videos
-		.filter(fileIsVideo)
+		.filter(file => fileIsVideo(file))
 		//Remove unnecessary path
 		.map(file => file.replace(regex, ""));
 
@@ -48,7 +49,7 @@ module.exports = async () => {
 		console.log(" ");
 
 		//Allow chance to cancel
-		await new Promise(res => {
+		await new Promise<void>(res => {
 			let secondsToGo = 10;
 			printCountdown(secondsToGo);
 
@@ -59,7 +60,7 @@ module.exports = async () => {
 					clearInterval(interval);
 					process.stdout.write("\n\n");
 				} else {
-					process.stdout.clearLine();
+					process.stdout.clearLine(0);
 					process.stdout.cursorTo(0);
 					printCountdown(--secondsToGo);
 				}
@@ -69,4 +70,4 @@ module.exports = async () => {
 
 	//Only proceed if there are files to convert
 	return filesToConvert.length;
-};
+}
