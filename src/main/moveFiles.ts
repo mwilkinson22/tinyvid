@@ -36,7 +36,7 @@ export async function moveFiles(): Promise<IFilesToProcess> {
 		const files = await getAllFilesRecursively(showFolder);
 
 		//Ensure there are no incomplete files
-		const incompleteFiles = files.filter(f => f.split(".").pop() === "!ut");
+		const incompleteFiles = files.filter((f) => f.split(".").pop() === "!ut");
 		if (incompleteFiles.length) {
 			continue;
 		}
@@ -80,7 +80,11 @@ export async function moveFiles(): Promise<IFilesToProcess> {
 		}
 
 		//Clear out empty directories
-		await deleteEmpty(showFolder);
+		try {
+			await deleteEmpty(showFolder);
+		} catch (e) {
+			await writeLog(`Error deleting ${showFolder} - ${e.toString()}`);
+		}
 	}
 
 	return filesToProcess;
