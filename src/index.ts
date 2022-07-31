@@ -34,13 +34,21 @@ async function main() {
 		await writeLog("TV Rename Updated", true);
 
 		//Update plex
-		const plexResult = await executeExe(
-			"C:\\Program Files (x86)\\Plex\\Plex Media Server\\Plex Media Scanner.exe",
-			["--scan", "--refresh", "--section", "2"]
-		);
-		console.log(plexResult);
+		await updatePlex(2);
+		if (Object.values(films).length) {
+			await updatePlex(4);
+		}
 		await writeLog("Plex Updated", true);
 	}
+}
+
+async function updatePlex(section: number) {
+	return executeExe("C:\\Program Files (x86)\\Plex\\Plex Media Server\\Plex Media Scanner.exe", [
+		"--scan",
+		"--refresh",
+		"--section",
+		section.toString()
+	]);
 }
 
 //Run scripts
