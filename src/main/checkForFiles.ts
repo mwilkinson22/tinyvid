@@ -8,13 +8,12 @@ import { getAllFilesRecursively } from "../helpers/getAllFilesRecursively";
 
 function printCountdown(seconds: number) {
 	if (seconds === 0) {
-		process.stdout.write("Beginning Conversion");
+		process.stdout.write("Beginning conversion");
+	} else {
+		process.stdout.write(
+			`Beginning conversion in ${seconds} ${seconds === 1 ? "second" : "seconds"}, close window to cancel`
+		);
 	}
-	process.stdout.write(
-		`Beginning conversion in ${seconds} ${
-			seconds === 1 ? "second" : "seconds"
-		}, close window to cancel`
-	);
 }
 
 export async function checkForFiles(): Promise<number> {
@@ -40,11 +39,7 @@ export async function checkForFiles(): Promise<number> {
 	//Print out workload and allow user time to cancel
 	if (filesToConvert && filesToConvert.length) {
 		//Inform user of file queue
-		console.log(
-			`${filesToConvert.length} ${
-				filesToConvert.length == 1 ? "File" : "Files"
-			} ready to convert:`
-		);
+		console.log(`${filesToConvert.length} ${filesToConvert.length == 1 ? "File" : "Files"} ready to convert:`);
 		filesToConvert.forEach(file => console.log(`\t${file}`));
 		console.log(" ");
 
