@@ -7,6 +7,9 @@ import { convert } from "./main/convert.js";
 import { writeLog } from "./helpers/writeLog";
 import { executeExe } from "./helpers/executeExe";
 
+//Keep track of film titles
+export const films: Record<string, string> = {};
+
 //Move files to processing folder
 async function main() {
 	//Check to see if any files require converting

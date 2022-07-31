@@ -6,7 +6,8 @@ const deleteEmpty = require("delete-empty");
 
 //Constants
 import { directories } from "../constants/directories";
-const { processDir, convertedDir, destinationDir } = directories;
+const { processDir, convertedDir, destinationDir, filmDestinationDir } = directories;
+import { films } from "../index";
 
 //Helpers
 import { writeLog } from "../helpers/writeLog";
@@ -28,27 +29,13 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 			await fs.mkdir(outputFolder);
 		}
 
-		//Set Final Destination Folder
-		const destinationFolder = path.resolve(destinationDir, showName);
-		try {
-			await fs.stat(destinationFolder);
-		} catch (e) {
-			//If the folder doesn't exist, create it
-			await fs.mkdir(destinationFolder);
-		}
-
 		//Loop Episodes
 		for (const filename of episodes) {
 			//Define full paths for input and output
 			const options = {
 				input: path.resolve(processDir, showName, filename),
 				output: path.resolve(outputFolder, filename),
-				"preset-import-file": path.resolve(
-					__dirname,
-					"src",
-					"assets",
-					"handbrake-preset.json"
-				)
+				"preset-import-file": path.resolve(__dirname, "src", "assets", "handbrake-preset.json")
 			};
 
 			//Convert file
@@ -98,10 +85,27 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 				}
 				console.log("\n");
 
-				await fs.rename(
-					fileToMove,
-					path.resolve(destinationFolder, path.basename(fileToMove))
-				);
+				//Set Final Destination Folder
+				let destinationFolder;
+				let destinationFileName;
+				if (films[path.basename(fileToMove)]) {
+					const film = films[path.basename(fileToMove)];
+					destinationFolder = path.resolve(filmDestinationDir, film);
+					destinationFileName = `${film}${path.extname(fileToMove)}`;
+				} else {
+					destinationFolder = path.resolve(destinationDir, showName);
+					destinationFileName = path.basename(fileToMove);
+				}
+
+				//Ensure destination folder exists
+				try {
+					await fs.stat(destinationFolder);
+				} catch (e) {
+					//If the folder doesn't exist, create it
+					await fs.mkdir(destinationFolder);
+				}
+
+				await fs.rename(fileToMove, path.resolve(destinationFolder, destinationFileName));
 				await fs.unlink(fileToDelete);
 			}
 		}

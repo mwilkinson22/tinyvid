@@ -6,6 +6,7 @@ const deleteEmpty = require("delete-empty");
 //File system info
 import { directories } from "../constants/directories";
 const { downloadDir, processDir } = directories;
+import { films } from "../index";
 
 //Interface
 import { IFilesToProcess } from "../interfaces/IFilesToProcess";
@@ -36,7 +37,7 @@ export async function moveFiles(): Promise<IFilesToProcess> {
 		const files = await getAllFilesRecursively(showFolder);
 
 		//Ensure there are no incomplete files
-		const incompleteFiles = files.filter((f) => f.split(".").pop() === "!ut");
+		const incompleteFiles = files.filter(f => f.split(".").pop() === "!ut");
 		if (incompleteFiles.length) {
 			continue;
 		}
@@ -73,6 +74,17 @@ export async function moveFiles(): Promise<IFilesToProcess> {
 
 					//Add this file to the process queue
 					filesToProcess[showName].push(fileName);
+				}
+
+				//Update film log if necessary.
+				if (showName === "Films") {
+					films[fileName] = path
+						// Get a relative path, i.e. convert D:/Downloads/Films/MyMovie/My.Movie.1080p.xrip to /MyMovie/My.Movie.1080p.xrip
+						.relative(showFolder, file)
+						// Split this into an array by folder separators
+						.split(path.sep)
+						// Find the first folder that's not an empty string
+						.find((str: string) => str.length);
 				}
 			} else {
 				await fs.unlink(file);
