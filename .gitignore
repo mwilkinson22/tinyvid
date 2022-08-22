@@ -3,4 +3,4 @@
 dist
 node_modules
 src/assets/run.exe
-src/constants/directories.ts
+src/config/directories.ts

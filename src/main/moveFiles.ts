@@ -4,7 +4,7 @@ const path = require("path");
 const deleteEmpty = require("delete-empty");
 
 //File system info
-import { directories } from "../constants/directories";
+import { directories } from "../config/directories";
 const { downloadDir, processDir } = directories;
 import { films } from "../index";
 

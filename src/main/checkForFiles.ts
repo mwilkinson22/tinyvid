@@ -1,5 +1,5 @@
 //File system info
-import { directories } from "../constants/directories";
+import { directories } from "../config/directories";
 const { downloadDir } = directories;
 
 //Helpers

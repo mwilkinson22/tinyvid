@@ -6,6 +6,9 @@ import { checkForFiles } from "./main/checkForFiles.js";
 import { moveFiles } from "./main/moveFiles.js";
 import { convert } from "./main/convert.js";
 
+//Config
+import { settings } from "./config/settings";
+
 //Helpers
 import { writeLog } from "./helpers/writeLog";
 import { executeExe } from "./helpers/executeExe";
@@ -33,26 +36,28 @@ async function main() {
 		//Move files and create convert list
 		const movedFiles = await moveFiles();
 
-		//Process files
-		await convert(movedFiles);
+		if (settings.updateMediaLibraries) {
+			//Process files
+			await convert(movedFiles);
 
-		//Update video names
-		const tvRenameResult = await executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", [
-			"/hide",
-			"/scan",
-			"/ignoremissing",
-			"/doall",
-			"/quit"
-		]);
-		console.log(tvRenameResult);
-		await writeLog("TV Rename Updated", true);
+			//Update video names
+			const tvRenameResult = await executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", [
+				"/hide",
+				"/scan",
+				"/ignoremissing",
+				"/doall",
+				"/quit"
+			]);
+			console.log(tvRenameResult);
+			await writeLog("TV Rename Updated", true);
 
-		//Update plex
-		await updatePlex(2);
-		if (Object.values(films).length) {
-			await updatePlex(4);
+			//Update plex
+			await updatePlex(2);
+			if (Object.values(films).length) {
+				await updatePlex(4);
+			}
+			await writeLog("Plex Updated", true);
 		}
-		await writeLog("Plex Updated", true);
 	}
 }
 

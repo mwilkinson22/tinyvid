@@ -5,7 +5,7 @@ const handbrake = require("handbrake-js");
 const deleteEmpty = require("delete-empty");
 
 //Constants
-import { directories } from "../constants/directories";
+import { directories } from "../config/directories";
 const { processDir, convertedDir, destinationDir, filmDestinationDir } = directories;
 import { films } from "../index";
 

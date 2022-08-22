@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 const path = require("path");
-import { directories } from "../constants/directories";
+import { directories } from "../config/directories";
 
 export async function writeLog(msg: string, withDivider: boolean = false): Promise<void> {
 	const log = path.resolve(directories.rootDir, "log.txt");
@@ -14,10 +14,7 @@ export async function writeLog(msg: string, withDivider: boolean = false): Promi
 	}
 
 	if (withDivider) {
-		await fs.appendFile(
-			log,
-			"/--------------------------------------------------------------------/\n"
-		);
+		await fs.appendFile(log, "/--------------------------------------------------------------------/\n");
 	}
 
 	console.log(msg);
