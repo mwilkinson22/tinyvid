@@ -15,6 +15,7 @@ import { writeLog } from "../helpers/writeLog";
 //Interfaces
 import { IFilesToProcess } from "../interfaces/IFilesToProcess";
 import { HandbrakeProgress } from "handbrake-js";
+import { getHandbrakeConfigPath } from "../helpers/getHandbrakeConfigPath";
 
 export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 	let totalFiles = 0;
@@ -40,7 +41,7 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 			const options = {
 				input: path.resolve(processDir, showName, filename),
 				output: path.resolve(outputFolder, filename),
-				"preset-import-file": path.resolve(__dirname, "src", "assets", "handbrake-preset.json")
+				"preset-import-file": getHandbrakeConfigPath()
 			};
 
 			//Convert file

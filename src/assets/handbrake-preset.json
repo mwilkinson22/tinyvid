@@ -89,7 +89,7 @@
       "VideoGrayScale": false,
       "VideoHWDecode": false,
       "VideoScaler": "swscale",
-      "VideoPreset": "faster",
+      "VideoPreset": "medium",
       "VideoTune": "",
       "VideoProfile": "auto",
       "VideoLevel": "auto",
