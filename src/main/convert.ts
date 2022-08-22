@@ -17,6 +17,11 @@ import { IFilesToProcess } from "../interfaces/IFilesToProcess";
 import { HandbrakeProgress } from "handbrake-js";
 
 export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
+	let totalFiles = 0;
+	let currentFile = 1;
+	for (const showName in filesToProcess) {
+		totalFiles += filesToProcess[showName].length;
+	}
 	for (const showName in filesToProcess) {
 		const episodes = filesToProcess[showName];
 
@@ -39,15 +44,23 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 			};
 
 			//Convert file
-			await writeLog(`Converting ${showName} episode '${filename}'`, true);
+			await writeLog(`Converting file ${currentFile++}/${totalFiles}: ${showName} episode '${filename}'`, true);
 			await writeLog(`Writing to ${options.output}`);
+			let lastEta = "";
 			await new Promise<void>((resolve, reject) => {
 				handbrake
 					.spawn(options)
-					.on("progress", ({ percentComplete }: HandbrakeProgress) => {
+					.on("progress", ({ percentComplete, eta }: HandbrakeProgress) => {
+						if (eta && eta.length) {
+							lastEta = eta;
+						}
 						process.stdout.clearLine(0);
 						process.stdout.cursorTo(0);
-						process.stdout.write(`${percentComplete}% Complete`);
+						process.stdout.write(
+							`${percentComplete}% Complete. ${
+								lastEta.length && percentComplete < 100 ? `Approx. time remaining: ${lastEta}` : ""
+							}`
+						);
 						if (percentComplete == 100) {
 							process.stdout.write("\n");
 						}
