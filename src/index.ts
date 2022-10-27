@@ -28,7 +28,7 @@ async function main() {
 		try {
 			await fs.stat(getHandbrakeConfigPath());
 		} catch (e) {
-			await writeLog("Error, could not locate Handbrake Config file.");
+			await writeLog("Error, could not locate Handbrake Config file.", true);
 			await pauseTerminal();
 			return process.exit();
 		}
@@ -36,10 +36,10 @@ async function main() {
 		//Move files and create convert list
 		const movedFiles = await moveFiles();
 
-		if (settings.updateMediaLibraries) {
-			//Process files
-			await convert(movedFiles);
+		//Process files
+		await convert(movedFiles);
 
+		if (settings.updateMediaLibraries) {
 			//Update video names
 			const tvRenameResult = await executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", [
 				"/hide",
