@@ -48,20 +48,41 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 			await writeLog(`Converting file ${currentFile++}/${totalFiles}: ${showName} episode '${filename}'`, true);
 			await writeLog(`Writing to ${options.output}`);
 			let lastEta = "";
+			const startTime = Date.now();
 			await new Promise<void>((resolve, reject) => {
 				handbrake
 					.spawn(options)
 					.on("progress", ({ percentComplete, eta }: HandbrakeProgress) => {
+						// Update ETA
 						if (eta && eta.length) {
 							lastEta = eta;
 						}
+
+						// Update elapsed time string
+						const difference: number = Date.now() - startTime;
+						const timeComponents = [];
+
+						const hours = Math.floor(difference / 3600 / 1000) % 60;
+						if (hours) {
+							timeComponents.push(`${hours}h`);
+						}
+						const minutes = Math.floor(difference / 60 / 1000) % 60;
+						if (hours || minutes) {
+							timeComponents.push(`${minutes < 10 ? "0" : ""}${minutes}m`);
+						}
+						const seconds = Math.floor(difference / 1000) % 60;
+						timeComponents.push(`${seconds < 10 ? "0" : ""}${seconds}s`);
+
+						// Set full output string
+						const outputStringComponents = [
+							`${percentComplete}% Complete.`,
+							timeComponents.join(" ") + " elapsed.",
+							lastEta.length && percentComplete < 100 ? `Approx. time remaining: ${lastEta}` : ""
+						].join(". ");
+
 						process.stdout.clearLine(0);
 						process.stdout.cursorTo(0);
-						process.stdout.write(
-							`${percentComplete}% Complete. ${
-								lastEta.length && percentComplete < 100 ? `Approx. time remaining: ${lastEta}` : ""
-							}`
-						);
+						process.stdout.write(outputStringComponents);
 						if (percentComplete == 100) {
 							process.stdout.write("\n");
 						}
