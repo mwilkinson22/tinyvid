@@ -38,16 +38,18 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 		//Loop Episodes
 		for (const filename of episodes) {
 			//Define full paths for input and output
+			const inputFile = path.resolve(processDir, showName, filename);
+			const outputFile = path.resolve(outputFolder, filename);
 			const options: HandbrakeOptions = {
-				input: path.resolve(processDir, showName, filename),
-				output: path.resolve(outputFolder, filename),
+				input: inputFile,
+				output: outputFile,
 				"preset-import-file": getHandbrakeConfigPath(),
 				"all-audio": true
 			};
 
 			//Convert file
 			await writeLog(`Converting file ${currentFile++}/${totalFiles}: ${showName} episode '${filename}'`, true);
-			await writeLog(`Writing to ${options.output}`);
+			await writeLog(`Writing to ${outputFile}`);
 			let lastEta = "";
 			const startTime = Date.now();
 			await new Promise<void>((resolve, reject) => {
@@ -96,8 +98,8 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 			});
 
 			//Log difference
-			const inputStat = await fs.stat(options.input as string);
-			const outputStat = await fs.stat(options.output as string);
+			const inputStat = await fs.stat(inputFile);
+			const outputStat = await fs.stat(outputFile);
 			if (outputStat) {
 				//Get sizes
 				const oldSize = (inputStat.size / 1048576).toFixed(2);
@@ -108,15 +110,16 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 				await writeLog(`${oldSize}mb -> ${newSize}mb (${pcOfOriginal}% of original)`);
 
 				//Work out which file to keep
-				let fileToMove, fileToDelete;
+				let fileToMove: string;
+				let fileToDelete: string;
 				if (outputStat.size < inputStat.size) {
 					//Successful reduction. Keep the converted one
-					fileToMove = options.output;
-					fileToDelete = options.input;
+					fileToMove = outputFile;
+					fileToDelete = inputFile;
 				} else {
 					//New file is larger, keep the old one
-					fileToMove = options.input as string;
-					fileToDelete = options.output as string;
+					fileToMove = inputFile;
+					fileToDelete = outputFile;
 					await writeLog("Keeping original file");
 				}
 				console.log("\n");
