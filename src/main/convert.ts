@@ -14,7 +14,7 @@ import { writeLog } from "../helpers/writeLog";
 
 //Interfaces
 import { IFilesToProcess } from "../interfaces/IFilesToProcess";
-import { HandbrakeProgress } from "handbrake-js";
+import { HandbrakeOptions, HandbrakeProgress } from "handbrake-js";
 import { getHandbrakeConfigPath } from "../helpers/getHandbrakeConfigPath";
 
 export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
@@ -38,10 +38,11 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 		//Loop Episodes
 		for (const filename of episodes) {
 			//Define full paths for input and output
-			const options = {
+			const options: HandbrakeOptions = {
 				input: path.resolve(processDir, showName, filename),
 				output: path.resolve(outputFolder, filename),
-				"preset-import-file": getHandbrakeConfigPath()
+				"preset-import-file": getHandbrakeConfigPath(),
+				"all-audio": true
 			};
 
 			//Convert file
@@ -95,8 +96,8 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 			});
 
 			//Log difference
-			const inputStat = await fs.stat(options.input);
-			const outputStat = await fs.stat(options.output);
+			const inputStat = await fs.stat(options.input as string);
+			const outputStat = await fs.stat(options.output as string);
 			if (outputStat) {
 				//Get sizes
 				const oldSize = (inputStat.size / 1048576).toFixed(2);
@@ -114,8 +115,8 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 					fileToDelete = options.input;
 				} else {
 					//New file is larger, keep the old one
-					fileToMove = options.input;
-					fileToDelete = options.output;
+					fileToMove = options.input as string;
+					fileToDelete = options.output as string;
 					await writeLog("Keeping original file");
 				}
 				console.log("\n");
