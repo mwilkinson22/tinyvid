@@ -1,3 +1,4 @@
-export const settings = {
-	updateMediaLibraries: true
+export const settings: ISettings = {
+	updateMediaLibraries: true,
+	showsThatKeepAllLanauages: []
 };

@@ -9,6 +9,9 @@ import { directories } from "../config/directories";
 const { processDir, convertedDir, destinationDir, filmDestinationDir } = directories;
 import { films } from "../index";
 
+//Config
+import { settings } from "../config/settings";
+
 //Helpers
 import { writeLog } from "../helpers/writeLog";
 
@@ -43,9 +46,14 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 			const options: HandbrakeOptions = {
 				input: inputFile,
 				output: outputFile,
-				"preset-import-file": getHandbrakeConfigPath(),
-				"all-audio": true
+				"preset-import-file": getHandbrakeConfigPath()
 			};
+
+			if (settings.showsThatKeepAllLanauages.includes(showName)) {
+				options["all-audio"] = true;
+			} else {
+				options["audio-lang-list"] = "eng";
+			}
 
 			//Convert file
 			await writeLog(`Converting file ${currentFile++}/${totalFiles}: ${showName} episode '${filename}'`, true);
