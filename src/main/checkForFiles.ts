@@ -11,7 +11,9 @@ function printCountdown(seconds: number) {
 		process.stdout.write("Beginning conversion");
 	} else {
 		process.stdout.write(
-			`Beginning conversion in ${seconds} ${seconds === 1 ? "second" : "seconds"}, close window to cancel`
+			`Beginning conversion in ${seconds} ${
+				seconds === 1 ? "second" : "seconds"
+			}, close window to cancel, or press enter to begin conversion.`
 		);
 	}
 }
@@ -55,11 +57,17 @@ export async function checkForFiles(): Promise<number> {
 					clearInterval(interval);
 					process.stdout.write("\n\n");
 				} else {
-					process.stdout.clearLine(0);
+					process.stdout.clearLine(1);
 					process.stdout.cursorTo(0);
 					printCountdown(--secondsToGo);
 				}
 			}, 1000);
+
+			process.stdin.on("data", () => {
+				secondsToGo = 0;
+				process.stdout.clearLine(1);
+				printCountdown(0);
+			});
 		});
 	}
 
