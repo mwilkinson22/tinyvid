@@ -9,6 +9,7 @@ import { getAllFilesRecursively } from "../helpers/getAllFilesRecursively";
 function printCountdown(seconds: number) {
 	if (seconds === 0) {
 		process.stdout.write("Beginning conversion");
+		process.stdin.destroy();
 	} else {
 		process.stdout.write(
 			`Beginning conversion in ${seconds} ${
