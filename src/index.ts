@@ -41,15 +41,15 @@ async function main() {
 
 		if (settings.updateMediaLibraries) {
 			//Update video names
-			const tvRenameResult = await executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", [
+			await writeLog("Running TV Rename", true);
+			await executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", [
 				"/hide",
-				"/scan",
+				"/recentscan",
 				"/ignoremissing",
 				"/doall",
 				"/quit"
 			]);
-			console.log(tvRenameResult);
-			await writeLog("TV Rename Updated", true);
+			await writeLog("TV Rename Complete");
 
 			//Update plex
 			await updatePlex(2);
