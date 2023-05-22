@@ -14,15 +14,19 @@ import { settings } from "../config/settings";
 
 //Helpers
 import { writeLog } from "../helpers/writeLog";
+import { updatePlex } from "../helpers/updatePlex";
 
 //Interfaces
 import { IFilesToProcess } from "../interfaces/IFilesToProcess";
 import { HandbrakeOptions, HandbrakeProgress } from "handbrake-js";
 import { getHandbrakeConfigPath } from "../helpers/getHandbrakeConfigPath";
+import { executeExe } from "../helpers/executeExe";
 
 export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 	let totalFiles = 0;
 	let currentFile = 1;
+	let tvRenameHasScanned = false;
+
 	for (const showName in filesToProcess) {
 		totalFiles += filesToProcess[showName].length;
 	}
@@ -135,7 +139,8 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 				//Set Final Destination Folder
 				let destinationFolder;
 				let destinationFileName;
-				if (films[path.basename(fileToMove)]) {
+				const isFilm = films[path.basename(fileToMove)] != null;
+				if (isFilm) {
 					const film = films[path.basename(fileToMove)];
 					destinationFolder = path.resolve(filmDestinationDir, film);
 					destinationFileName = `${film}${path.extname(fileToMove)}`;
@@ -154,6 +159,21 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 
 				await fs.rename(fileToMove, path.resolve(destinationFolder, destinationFileName));
 				await fs.unlink(fileToDelete);
+
+				if (settings.updateMediaLibraries) {
+					//Update video names
+					const tvRenameArguments = ["/hide", "/ignoremissing", "/doall", "/quit"];
+
+					if (!tvRenameHasScanned) {
+						tvRenameArguments.unshift("/recentscan");
+						tvRenameHasScanned = true;
+					}
+
+					executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", tvRenameArguments);
+
+					//Update plex
+					updatePlex(isFilm ? 4 : 2);
+				}
 			}
 		}
 
