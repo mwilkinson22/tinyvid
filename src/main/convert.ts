@@ -161,16 +161,17 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 				await fs.unlink(fileToDelete);
 
 				if (settings.updateMediaLibraries) {
-					//Update video names
-					const tvRenameArguments = ["/hide", "/ignoremissing", "/doall", "/quit"];
+					if (!isFilm) {
+						//Update video names
+						const tvRenameArguments = ["/hide", "/ignoremissing", "/doall", "/quit"];
 
-					if (!tvRenameHasScanned) {
-						tvRenameArguments.unshift("/recentscan");
-						tvRenameHasScanned = true;
+						if (!tvRenameHasScanned) {
+							tvRenameArguments.unshift("/recentscan");
+							tvRenameHasScanned = true;
+						}
+
+						executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", tvRenameArguments);
 					}
-
-					executeExe("C:\\Program Files (x86)\\TVRename\\TVRename.exe", tvRenameArguments);
-
 					//Update plex
 					updatePlex(isFilm ? 4 : 2);
 				}
