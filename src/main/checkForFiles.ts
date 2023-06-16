@@ -4,6 +4,7 @@ const { downloadDir } = directories;
 
 //Helpers
 import { fileIsVideo } from "../helpers/fileHelper";
+import { sortPriorityShows } from "../helpers/sortPriorityShows";
 import { getAllFilesRecursively } from "../helpers/getAllFilesRecursively";
 
 function printCountdown(seconds: number) {
@@ -27,7 +28,7 @@ export async function checkForFiles(): Promise<number> {
 	//This must match forward and backward slashes, so first we create a
 	//string for the RegExp constructor,
 	//e.g D:[\\\/]Videos[\\\/]Downloaded[\\\/]
-	const regexString = `${downloadDir}/`.split(/[\/]/).join("[\\\\\\/]");
+	const regexString = `${downloadDir}/`.split(/[\\/]/).join("[\\\\\\/]");
 
 	//Convert it to a RegExp object
 	const regex = new RegExp(regexString, "gi");
@@ -37,7 +38,9 @@ export async function checkForFiles(): Promise<number> {
 		//Only videos
 		.filter(file => fileIsVideo(file))
 		//Remove unnecessary path
-		.map(file => file.replace(regex, ""));
+		.map(file => file.replace(regex, ""))
+		//Sort By Priority
+		.sort(sortPriorityShows);
 
 	//Print out workload and allow user time to cancel
 	if (filesToConvert && filesToConvert.length) {

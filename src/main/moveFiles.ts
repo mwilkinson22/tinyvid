@@ -15,6 +15,7 @@ import { IFilesToProcess } from "../interfaces/IFilesToProcess";
 import { fileIsVideo } from "../helpers/fileHelper";
 import { writeLog } from "../helpers/writeLog";
 import { getAllFilesRecursively } from "../helpers/getAllFilesRecursively";
+import { sortPriorityShows } from "../helpers/sortPriorityShows";
 
 export async function moveFiles(): Promise<IFilesToProcess> {
 	//Key: Show Name
@@ -23,6 +24,8 @@ export async function moveFiles(): Promise<IFilesToProcess> {
 
 	//Loop through each folder in the download directory
 	const tvShows = await fs.readdir(downloadDir);
+	tvShows.sort(sortPriorityShows);
+
 	for (const showName of tvShows) {
 		//Get full directory for downloaded show
 		const showFolder = path.resolve(downloadDir, showName);
