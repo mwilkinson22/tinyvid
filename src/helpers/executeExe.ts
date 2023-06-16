@@ -7,7 +7,6 @@ export function executeExe(fileName: string, params: string[]): Promise<string |
 		process.on("error", reject);
 
 		// For some reason, not defining a data handler causes TVRename to crash.
-		// We may as well log the output.
-		process.stdout.on("data", data => console.log(data));
+		process.stdout.on("data", () => {});
 	});
 }
