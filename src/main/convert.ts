@@ -166,7 +166,7 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 						const tvRenameArguments = ["/hide", "/ignoremissing", "/doall", "/quit"];
 
 						if (!tvRenameHasScanned) {
-							tvRenameArguments.unshift("/recentscan");
+							tvRenameArguments.unshift("/quick");
 							tvRenameHasScanned = true;
 						}
 
