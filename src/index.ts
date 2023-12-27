@@ -11,9 +11,6 @@ import { writeLog } from "./helpers/writeLog";
 import { getHandbrakeConfigPath } from "./helpers/getHandbrakeConfigPath";
 import { pauseTerminal } from "./helpers/pauseTerminal";
 
-//Keep track of film titles
-export const films: Record<string, string> = {};
-
 //Move files to processing folder
 async function main() {
 	//Check to see if any files require converting

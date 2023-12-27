@@ -7,7 +7,6 @@ const deleteEmpty = require("delete-empty");
 //Constants
 import { directories } from "../config/directories";
 const { processDir, convertedDir, destinationDir, filmDestinationDir } = directories;
-import { films } from "../index";
 
 //Config
 import { settings } from "../config/settings";
@@ -15,6 +14,7 @@ import { settings } from "../config/settings";
 //Helpers
 import { writeLog } from "../helpers/writeLog";
 import { updatePlex } from "../helpers/updatePlex";
+import { createFolder } from "../helpers/fileHelper";
 
 //Interfaces
 import { IFilesToProcess } from "../interfaces/IFilesToProcess";
@@ -31,22 +31,48 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 		totalFiles += filesToProcess[showName].length;
 	}
 	for (const showName in filesToProcess) {
-		const episodes = filesToProcess[showName];
+		const files = filesToProcess[showName];
 
-		//Set Conversion Output Folder
-		const outputFolder = path.resolve(convertedDir, showName);
-		try {
-			await fs.stat(outputFolder);
-		} catch (e) {
-			//If the folder doesn't exist, create it
-			await fs.mkdir(outputFolder);
+		const isFilm = showName === "Films";
+		const fileCountByFilm: Record<string, number> = {};
+		if (isFilm) {
+			files.forEach(file => {
+				const film = file.split(path.sep)[0];
+				if (!fileCountByFilm[film]) {
+					fileCountByFilm[film] = 0;
+				}
+
+				fileCountByFilm[film]++;
+			});
 		}
 
 		//Loop Episodes
-		for (const filename of episodes) {
-			//Define full paths for input and output
-			const inputFile = path.resolve(processDir, showName, filename);
+		for (const fileToProcess of files) {
+			let filename: string, filmName: string;
+			if (isFilm) {
+				//For films, fileToProcess will be something like "MyMovie/My.Movie.2023.mp4".
+				[filmName, filename] = fileToProcess.split(path.sep);
+			} else {
+				filename = fileToProcess;
+				filmName = "";
+			}
+
+			//Get the input and output folders
+			const inputPath = [processDir, showName];
+			const outputPath = [convertedDir, showName];
+			if (isFilm) {
+				inputPath.push(filmName);
+				outputPath.push(filmName);
+			}
+			const inputFolder = path.resolve(...inputPath);
+			const outputFolder = path.resolve(...outputPath);
+			await createFolder(outputFolder);
+
+			//Get full file paths
+			const inputFile = path.resolve(inputFolder, filename);
 			const outputFile = path.resolve(outputFolder, filename);
+
+			//Set up handbrake;
 			const options: HandbrakeOptions = {
 				input: inputFile,
 				output: outputFile,
@@ -60,7 +86,8 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 			}
 
 			//Convert file
-			await writeLog(`Converting file ${currentFile++}/${totalFiles}: ${showName} episode '${filename}'`, true);
+			const mediaDescriptor = isFilm ? fileToProcess : `${showName} episode '${filename}'`;
+			await writeLog(`Converting file ${currentFile++}/${totalFiles}: ${mediaDescriptor}`, true);
 			await writeLog(`Writing to ${outputFile}`);
 			let lastEta = "";
 			const startTime = Date.now();
@@ -139,23 +166,21 @@ export async function convert(filesToProcess: IFilesToProcess): Promise<void> {
 				//Set Final Destination Folder
 				let destinationFolder;
 				let destinationFileName;
-				const isFilm = films[path.basename(fileToMove)] != null;
 				if (isFilm) {
-					const film = films[path.basename(fileToMove)];
-					destinationFolder = path.resolve(filmDestinationDir, film);
-					destinationFileName = `${film}${path.extname(fileToMove)}`;
+					// We check to make sure this is the only file for this film.
+					// If so, we rename it. If not, we may have downloaded extras or featurettes, and we don't rename.
+					const canRename = fileCountByFilm[filmName] === 1;
+					destinationFolder = path.resolve(filmDestinationDir, filmName);
+					destinationFileName = canRename
+						? `${filmName}${path.extname(fileToMove)}`
+						: path.basename(fileToMove);
 				} else {
 					destinationFolder = path.resolve(destinationDir, showName);
 					destinationFileName = path.basename(fileToMove);
 				}
 
 				//Ensure destination folder exists
-				try {
-					await fs.stat(destinationFolder);
-				} catch (e) {
-					//If the folder doesn't exist, create it
-					await fs.mkdir(destinationFolder);
-				}
+				await createFolder(destinationFolder);
 
 				await fs.rename(fileToMove, path.resolve(destinationFolder, destinationFileName));
 				await fs.unlink(fileToDelete);

@@ -6,13 +6,12 @@ const deleteEmpty = require("delete-empty");
 //File system info
 import { directories } from "../config/directories";
 const { downloadDir, processDir } = directories;
-import { films } from "../index";
 
 //Interface
 import { IFilesToProcess } from "../interfaces/IFilesToProcess";
 
 //Helpers
-import { fileIsVideo } from "../helpers/fileHelper";
+import { createFolder, fileIsVideo } from "../helpers/fileHelper";
 import { writeLog } from "../helpers/writeLog";
 import { getAllFilesRecursively } from "../helpers/getAllFilesRecursively";
 import { sortPriorityShows } from "../helpers/sortPriorityShows";
@@ -27,6 +26,8 @@ export async function moveFiles(): Promise<IFilesToProcess> {
 	tvShows.sort(sortPriorityShows);
 
 	for (const showName of tvShows) {
+		const isFilm = showName === "Films";
+
 		//Get full directory for downloaded show
 		const showFolder = path.resolve(downloadDir, showName);
 
@@ -45,24 +46,35 @@ export async function moveFiles(): Promise<IFilesToProcess> {
 			continue;
 		}
 
+		//Set folder in conversion queue
+		const queueFolder = path.resolve(processDir, showName);
+		await createFolder(queueFolder);
+
 		for (const file of files) {
 			if (fileIsVideo(file)) {
-				//Set folder in conversion queue
-				const queueFolder = processDir + "/" + showName;
-				try {
-					await fs.stat(queueFolder);
-				} catch (e) {
-					//If the folder doesn't exist, create it
-					await fs.mkdir(queueFolder);
-				}
-
 				//file is the full path. path.basename gives us just the file name
-				const fileName = path.basename(file);
+				let fileName = path.basename(file);
+
+				if (isFilm) {
+					const filmName = path
+						// Get a relative path, i.e. convert D:/Downloads/Films/MyMovie/My.Movie.1080p.xrip to /MyMovie/My.Movie.1080p.xrip
+						.relative(showFolder, file)
+						// Split this into an array by folder separators
+						.split(path.sep)
+						// Find the first folder that's not an empty string
+						.find((str: string) => str.length);
+
+					// Ensure a folder for this film.
+					await createFolder(path.resolve(queueFolder, filmName));
+
+					//Cannot use path.resolve here as the file doesn't exist!
+					fileName = filmName + path.sep + fileName;
+				}
 
 				//Move file
 				let error = false;
 				try {
-					await fs.rename(file, `${queueFolder}/${fileName}`);
+					await fs.rename(file, path.resolve(queueFolder, fileName));
 				} catch (e) {
 					error = true;
 					await writeLog(`Error moving ${fileName}`, true);
@@ -77,17 +89,6 @@ export async function moveFiles(): Promise<IFilesToProcess> {
 
 					//Add this file to the process queue
 					filesToProcess[showName].push(fileName);
-				}
-
-				//Update film log if necessary.
-				if (showName === "Films") {
-					films[fileName] = path
-						// Get a relative path, i.e. convert D:/Downloads/Films/MyMovie/My.Movie.1080p.xrip to /MyMovie/My.Movie.1080p.xrip
-						.relative(showFolder, file)
-						// Split this into an array by folder separators
-						.split(path.sep)
-						// Find the first folder that's not an empty string
-						.find((str: string) => str.length);
 				}
 			} else {
 				await fs.unlink(file);
